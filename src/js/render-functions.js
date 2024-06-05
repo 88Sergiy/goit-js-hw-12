@@ -1,77 +1,74 @@
-import iziToast from 'izitoast';
-import 'izitoast/dist/css/iziToast.min.css';
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
+import iziToast from "izitoast";
+import "izitoast/dist/css/iziToast.min.css";
 
-const loaderBtn = document.querySelector('.loader-btn');
-const loadMoreBtn = document.querySelector('.load-more');
+
 let lightbox;
 
-export function renderCard(hits, gallery) {
-
-    const markup = hits.map(hit => createGalleryCard(hit)).join('');
-    gallery.insertAdjacentHTML('beforeend', markup);
-    if (lightbox) {
-        lightbox.refresh();
-    } else {
-        lightbox = new SimpleLightbox('.gallery a');
-    }
-}
-
-function createGalleryCard({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) {
-    return `
-    <a class="gallery-item" href="${largeImageURL}">
-      <img src="${webformatURL}" alt="${tags}" loading="lazy" />
-      <div class="info">
-        <p><span>Likes:</span> ${likes}</p>
-        <p><span>Views:</span> ${views}</p>
-        <p><span>Comments:</span> ${comments}</p>
-        <p><span>Downloads:</span> ${downloads}</p>
-      </div>
-    </a>
-  `;
-}
-
-export function clearGallery(gallery) {
+export function renderImages(images, isNewQuery) {
+  const gallery = document.querySelector('.gallery');
+  const prevHeight = gallery.clientHeight;
+  if (isNewQuery) {
     gallery.innerHTML = '';
-}
-
-export function showErrorMessage(message) {
-    iziToast.error({
-        message: message,
-        messageColor: '#fff',
-        position: 'topRight',
-        backgroundColor: '#5b8cd1',
+  }
+  gallery.innerHTML += images.map(image => `
+    <a href="${image.largeImageURL}" class="gallery-item">
+      <img src="${image.webformatURL}" alt="${image.tags}" loading="lazy">
+      <div class="info">
+        <p><b>Likes:</b> ${image.likes}</p>
+        <p><b>Views:</b> ${image.views}</p>
+        <p><b>Comments:</b> ${image.comments}</p>
+        <p><b>Downloads:</b> ${image.downloads}</p>
+      </div>
+    </a>`).join('');
+  
+  if (!lightbox) {
+    lightbox = new SimpleLightbox('.gallery a', {
+      caption: true,
+      captionsData: 'alt',
+      captionDelay: 250,
     });
+  } else {
+    lightbox.refresh();
+  }
+  const newHeight = gallery.clientHeight;
+  window.scrollBy({
+    top: newHeight - prevHeight,
+    behavior: 'smooth'
+  });
 }
 
-export function showLoadingIndicator() {
-    const loader = document.createElement('div');
-    loader.className = 'loader';
-    document.body.appendChild(loader);
+export function showError(message) {
+  iziToast.error({
+    title: 'Error',
+    message: message,
+    position: 'topRight'
+  });
 }
 
-export function hideLoadingIndicator() {
-    const loader = document.querySelector('.loader');
-    if (loader) {
-        document.body.removeChild(loader);
-    }
+export function clearGallery() {
+  const gallery = document.querySelector('.gallery');
+  gallery.innerHTML = '';
 }
 
-export function showLoadMoreBtn() {
-    loadMoreBtn.classList.remove('hidden');
+export function showLoader() {
+  console.log('+');
+  document.querySelector('.div-loader').classList.remove('hidden');
 }
 
-export function hideLoadMoreBtn() {
-    loadMoreBtn.classList.add('hidden');
-
+export function hideLoader() {
+  console.log('-');
+  setTimeout(() => {
+    document.querySelector('.div-loader').classList.add('hidden');
+  },2000);
 }
 
-export function showLoadingIndicatorBtn() {
-    loaderBtn.classList.remove('hidden')
-}
-
-export function hideLoadingIndicatorBtn() {
-    loaderBtn.classList.add('hidden');
-
+export function toggleLoadMoreButton(show) {
+  const loadMoreButton = document.querySelector('.load-more');
+  if (show) {
+    loadMoreButton.classList.remove('hidden');
+  } else {
+loadMoreButton.classList.add('hidden')
+  }
 }
